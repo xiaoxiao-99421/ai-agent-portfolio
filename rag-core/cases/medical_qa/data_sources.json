@@ -1,0 +1,24 @@
+{
+  "description": "医疗问答用例：真实 ~247k 数据（分块增量运行）。limit=每源本次纳入行数；后续调大即可续跑，ingest 自动只向量化新 id（累加进同一 FAISS 向量库）。",
+  "sources": [
+    {
+      "name": "medical_sample",
+      "path": "sample.csv",
+      "encoding": "utf-8"
+    },
+    {
+      "name": "内科",
+      "path": "内科.csv",
+      "encoding": "gbk",
+      "department": "内科",
+      "limit": null
+    },
+    {
+      "name": "外科",
+      "path": "外科.csv",
+      "encoding": "gbk",
+      "department": "外科",
+      "limit": null
+    }
+  ]
+}

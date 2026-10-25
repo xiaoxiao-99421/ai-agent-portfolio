@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>文档自动化处理</title>
+<style>
+  :root {
+    --bg:#0d1420; --surface:#141d2b; --surface-2:#1b2637;
+    --ink:#e7edf5; --muted:#93a3b8; --dim:#55637a;
+    --accent:#2dd4bf; --accent-ink:#052e2b;
+    --border:rgba(231,237,245,.1); --border-soft:rgba(231,237,245,.06);
+    --ok:#34d399; --warn:#f59e0b; --bad:#f87171;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+         background:var(--bg); color:var(--ink); line-height:1.65; min-height:100vh; font-weight:300;
+         -webkit-font-smoothing:antialiased; }
+  body::before{
+    content:''; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.028;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap { max-width:940px; margin:0 auto; padding:0 20px 64px; position:relative; z-index:5; }
+  .hero {
+    margin:0 -20px 26px; padding:34px 20px 28px;
+    background:linear-gradient(135deg,#0f2a33,#0d9488);
+    color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .hero .brand { display:flex; align-items:center; gap:14px; }
+  .hero .logo { width:46px; height:46px; border-radius:13px; background:rgba(255,255,255,.16);
+    display:grid; place-items:center; font-size:24px; }
+  .hero h1 { font-size:23px; margin:0; font-weight:700; letter-spacing:.3px; }
+  .hero p { margin:10px 0 0; font-size:14.5px; opacity:.92; max-width:660px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px;
+          padding:22px 24px; margin-bottom:20px; }
+  label { display:block; font-size:13px; font-weight:600; margin:0 0 7px; color:var(--muted); }
+  textarea, select { width:100%; border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px; font-size:14px; font-family:inherit; background:var(--surface-2); color:var(--ink);
+    transition:border-color .15s, box-shadow .15s; }
+  textarea:focus, select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,212,191,.12); }
+  textarea::placeholder{ color:var(--dim); }
+  textarea { resize:vertical; min-height:150px; }
+  .examples { display:flex; flex-wrap:wrap; gap:9px; margin-bottom:6px; }
+  .ex { background:rgba(45,212,191,.1); color:var(--accent); border:1px solid rgba(45,212,191,.25); border-radius:999px;
+        padding:7px 14px; font-size:13px; cursor:pointer; transition:background .15s, transform .12s; }
+  .ex:hover { background:rgba(45,212,191,.2); transform:translateY(-1px); }
+  button.go { margin-top:16px; background:var(--accent); color:var(--accent-ink); border:none; border-radius:11px;
+    padding:13px 20px; font-size:15px; font-weight:600; cursor:pointer; width:100%; transition:transform .12s, box-shadow .15s;
+    box-shadow:0 6px 16px rgba(45,212,191,.25); }
+  button.go:hover { box-shadow:0 10px 22px rgba(45,212,191,.32); transform:translateY(-1px); }
+  button.go:disabled { background:#3a4658; box-shadow:none; cursor:not-allowed; transform:none; color:var(--muted); }
+  .err { color:var(--bad); font-size:13px; margin-top:12px; white-space:pre-wrap; }
+  h3 { font-size:14.5px; margin:22px 0 9px; color:var(--ink); }
+  .step { display:flex; align-items:flex-start; gap:12px; padding:9px 0; border-bottom:1px dashed var(--border); }
+  .dot { width:14px; height:14px; border-radius:50%; flex:none; margin-top:4px; }
+  .st-ok { background:var(--ok); } .st-review { background:var(--warn); }
+  .st-skip { background:#64748b; } .st-error { background:var(--bad); }
+  .step .nm { font-weight:600; font-size:14px; color:var(--ink); }
+  .step .dt { font-size:13px; color:var(--muted); }
+  .kv { display:grid; grid-template-columns:110px 1fr; gap:5px 12px; font-size:14px; }
+  .kv .k { color:var(--muted); }
+  .kv .v { color:var(--ink); word-break:break-word; }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+  th, td { border:1px solid var(--border); padding:7px 9px; text-align:left; }
+  th { background:var(--surface-2); color:var(--muted); font-weight:600; }
+  .val-ok { color:var(--ok); font-weight:700; }
+  .val-review { color:var(--warn); font-weight:700; }
+  .issue { color:var(--warn); font-size:13px; margin-top:4px; }
+  .store-ok { color:var(--ok); font-weight:700; }
+  .store-skip { color:var(--muted); font-weight:700; }
+  .summary { background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+    padding:14px 16px; font-size:14px; color:var(--ink); line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="brand">
+    <div class="logo">📄</div>
+    <div><h1>文档自动化处理</h1></div>
+  </div>
+  <p>粘贴采购单、发票等单据，自动抽取关键字段、校验金额一致性并归档，减少人工录入。</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <label>示例文档（点击填入）</label>
+    <div class="examples">
+      <button class="ex" data-k="po_it">采购单 · IT 设备</button>
+      <button class="ex" data-k="po_office">采购单 · 办公耗材</button>
+      <button class="ex" data-k="po_appliance">采购单 · 电器</button>
+      <button class="ex" data-k="invoice">电子发票</button>
+    </div>
+    <label for="t" style="margin-top:14px">粘贴待处理文档文本</label>
+    <textarea id="t" placeholder="例如：&#10;采购单&#10;供应商：某某科技有限公司&#10;日期：2026-09-15&#10;物品：笔记本电脑 2台 单价6000 小计12000 …"></textarea>
+    <button class="go" id="btn">运行处理（抽取 → 校验 → 归档）</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div id="result" class="card" style="display:none">
+    <h3>🤖 处理步骤</h3>
+    <div id="steps"></div>
+
+    <h3>📋 结构化抽取结果</h3>
+    <div class="kv" id="kv"></div>
+    <div id="items"></div>
+
+    <h3>✅ 规则校验</h3>
+    <div id="val"></div>
+
+    <h3>🗄️ 数据归档</h3>
+    <div id="store"></div>
+
+    <h3>📝 处理报告</h3>
+    <div class="summary" id="summary"></div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const btn = $("btn");
+  const SAMPLES = {
+    po_it: `采购单
+供应商：星河智能科技有限公司
+日期：2026-09-15
+币种：CNY
+物品明细：
+  笔记本电脑  2台  单价 6000  小计 12000
+  27寸显示器  3台  单价 1500  小计 4500
+  机械键盘    5个  单价 200   小计 1000
+合计：17500`,
+    po_office: `采购单
+供应商：远洋办公设备有限公司
+日期：2026-10-08
+币种：CNY
+物品明细：
+  打印纸 A4  10箱  单价 180  小计 1800
+  U盘 64G   20个  单价 65   小计 1300
+  投影仪    1台  单价 3900  小计 3900
+合计：7000`,
+    po_appliance: `采购单
+供应商：康佳电器股份有限公司
+日期：2026-09-28
+币种：CNY
+物品明细：
+  空气净化器  4台  单价 1200  小计 4800
+  加湿器     6台  单价 300   小计 1800
+合计：6600`,
+    invoice: `电子发票
+销售方：云栖网络服务有限公司
+开票日期：2026-08-30
+金额（含税）：8600.00 元
+项目：云服务器租用 1年 8600
+备注：合同编号 HT-2026-088`,
+  };
+
+  document.querySelectorAll(".ex").forEach((b) => b.onclick = () => {
+    $("t").value = SAMPLES[b.getAttribute("data-k")] || "";
+  });
+
+  btn.onclick = async () => {
+    const text = $("t").value.trim();
+    if (!text) { $("err").textContent = "请粘贴文档文本。"; return; }
+    $("err").textContent = "";
+    btn.disabled = true; btn.textContent = "处理中…";
+    try {
+      const resp = await fetch("/api/process", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const d = await resp.json();
+      if (!resp.ok) throw new Error(d.error || "服务错误");
+      if (d.error) throw new Error(d.error + (d.hint ? "\n" + d.hint : ""));
+      render(d);
+    } catch (e) {
+      $("err").textContent = "处理失败：" + e.message;
+    } finally {
+      btn.disabled = false; btn.textContent = "运行处理（抽取 → 校验 → 归档）";
+    }
+  };
+
+  function render(d) {
+    $("steps").innerHTML = (d.steps || []).map((s) =>
+      `<div class="step"><span class="dot st-${s.status}"></span>
+        <div><div class="nm">${s.name}</div><div class="dt">${s.detail || ""}</div></div></div>`).join("");
+    const ex = d.extracted || {};
+    $("kv").innerHTML =
+      `<div class="k">类型</div><div class="v">${ex.doc_type || "-"}</div>
+       <div class="k">供应商</div><div class="v">${ex.supplier || "-"}</div>
+       <div class="k">日期</div><div class="v">${ex.date || "-"}</div>
+       <div class="k">币种</div><div class="v">${ex.currency || "-"}</div>
+       <div class="k">合计</div><div class="v">${ex.total ?? "-"}</div>`;
+    const items = ex.items || [];
+    $("items").innerHTML = items.length
+      ? `<table><thead><tr><th>物品</th><th>数量</th><th>单价</th><th>小计</th></tr></thead><tbody>
+          ${items.map((it) => `<tr><td>${it.name}</td><td>${it.qty}</td><td>${it.unit_price}</td><td>${it.subtotal}</td></tr>`).join("")}
+         </tbody></table>`
+      : `<div class="dt" style="color:var(--muted);font-size:13px">无物品明细</div>`;
+    const v = d.validation || {};
+    $("val").innerHTML = `<div class="${v.status === "ok" ? "val-ok" : "val-review"}">状态：${v.status === "ok" ? "通过" : "待复核"}</div>` +
+      (v.issues && v.issues.length ? v.issues.map((i) => `<div class="issue">• ${i}</div>`).join("") : "");
+    const st = d.store || {};
+    $("store").innerHTML = st.stored
+      ? `<div class="store-ok">已归档（去重保护）</div><div class="dt" style="font-size:13px;color:var(--muted);margin-top:4px">record_id=${st.record_id} · 数据版本=${st.version} · 数据池共 ${st.count} 条</div>`
+      : `<div class="store-skip">${st.reason || "跳过"}</div><div class="dt" style="font-size:13px;color:var(--muted);margin-top:4px">record_id=${st.record_id}</div>`;
+    $("summary").textContent = d.summary || "-";
+    $("result").style.display = "block";
+    $("result").scrollIntoView({ behavior: "smooth" });
+  }
+</script>
+</body>
+</html>

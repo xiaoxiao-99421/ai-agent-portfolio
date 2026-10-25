@@ -1,0 +1,48 @@
+# ---- Bytecode / caches ----
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ---- Logs (include demo logs) ----
+*.log
+
+# ---- Virtual environments ----
+.venv/
+venv/
+
+# ---- Secrets: ignore any .env, keep .env.example ----
+.env
+.env.*
+!.env.example
+
+# ---- Local demo runtime artifacts ----
+doc-agent/data/
+meeting-agent/data/
+support-agent/data/
+
+# ---- rag-core heavy data & model artifacts (never commit) ----
+rag-core/models/
+rag-core/**/data/raw/*.csv
+rag-core/**/data/interim/**
+rag-core/**/data/processed/rag_dataset.jsonl
+rag-core/**/data/vectors/**
+rag-core/**/data/eval/eval_results.jsonl
+rag-core/**/data/eval/eval_review.jsonl
+
+# keep small samples / configs / readmes under rag-core/cases
+!rag-core/**/data/raw/*sample*.csv
+!rag-core/**/data_sources.json
+!rag-core/**/dept_mapping.json
+!rag-core/**/dept_pending.json
+!rag-core/**/dept_taxonomy.json
+!rag-core/**/data/eval/eval_queries.jsonl
+!rag-core/**/data/processed/data_version.json
+!rag-core/**/*.md
+
+# misc: stray notebook, never commit
+rag-core/test.ipynb
+
+# ---- OS / editor ----
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,31 @@
+[project]
+name = "rag-core"
+version = "0.1.0"
+description = "领域无关的 RAG 内核 + 自动评测 harness；医疗问答等用例作为数据集接入"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2.0",
+    "pyarrow>=15.0.0",
+    "faiss-cpu>=1.8.0",  # 向量索引：显式 write_index/read_index，落盘可控（替代持久化不可靠的 chroma）
+    "sentence-transformers>=3.0.0",
+    "accelerate>=1.0.0",  # 供 low_cpu_mem_usage 加载：加载峰值内存 ~4.5GB -> ~2.3GB（低内存机器必需）
+    "openai>=1.30.0",
+    "python-dotenv>=1.0.0",
+    "pypdf>=4.0.0",
+    "tqdm>=4.66.0",
+]
+
+# 本项目以 `python run.py` 直接运行（run.py 自行把 src/ 加入路径），
+# 不需要把自身打包安装。设为非包项目后 `uv sync` 只装依赖、不构建本项目，避免构建冲突。
+[tool.uv]
+package = false
+
+# 兼容 `pip install -e .`：合法 hatchling 配置，使 rag_core 可被正确打包/可编辑安装。
+[tool.hatch.build.targets.wheel]
+packages = ["src/rag_core"]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.0",
+]

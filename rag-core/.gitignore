@@ -1,0 +1,36 @@
+# Python 环境与字节码
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 本地密钥（只提交 .env.example）
+.env
+.env.*
+!.env.example
+
+# 模型权重（体积大，由 setup / 环境变量指向本地或自动下载）
+/models/
+
+# 大体积数据与向量库（仅提交 cases/ 下的小样本）
+data/raw/
+data/interim/
+data/processed/
+data/chroma*/
+data/vectors/
+data/eval/
+
+# 但保留 cases/ 下的样例数据与配置（被上方规则例外保留）
+!cases/**/sample.csv
+!cases/**/data_sources.json
+!cases/**/dept_mapping.json
+!cases/**/*.md
+
+# 编辑器 / 系统
+.ipynb_checkpoints/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

@@ -1,0 +1,10 @@
+{
+  "description": "用例① 企业知识库问答 Agent：用同一套 rag_core 引擎接入企业文档/制度问答（此处用 HR/IT 政策小样本演示，无科室字段，验证领域无关）",
+  "sources": [
+    {
+      "name": "kb_sample",
+      "path": "kb_sample.csv",
+      "encoding": "utf-8"
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>智能客服助手</title>
+<style>
+  :root{
+    --bg:#0d1420; --panel:#141d2b; --panel2:#1b2637; --border:rgba(231,237,245,.1);
+    --txt:#e7edf5; --sub:#93a3b8; --accent:#2dd4bf; --accent-d:#14b8a6;
+    --accent2:#34d399; --warn:#f59e0b; --danger:#f87171; --ok:#34d399;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;font-weight:300;
+       -webkit-font-smoothing:antialiased;}
+  body::before{
+    content:''; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.028;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  header.hero{
+    padding:18px 22px; background:linear-gradient(135deg,#0f2a33,#0d9488); color:#fff;
+    box-shadow:0 8px 24px rgba(0,0,0,.35); flex:none; position:relative; z-index:5;
+  }
+  .hero .brand{display:flex;align-items:center;gap:13px;}
+  .hero .logo{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.16);
+    display:grid;place-items:center;font-size:23px;}
+  .hero h1{font-size:19px;margin:0;font-weight:700;}
+  .hero p{margin:6px 0 0;font-size:13.5px;opacity:.92;max-width:720px;}
+  #chat{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:15px;background:var(--bg);}
+  .msg{display:flex;gap:11px;max-width:84%;}
+  .msg.user{margin-left:auto;flex-direction:row-reverse;}
+  .bubble{padding:12px 15px;border-radius:15px;line-height:1.65;font-size:14px;white-space:pre-wrap;word-break:break-word;box-shadow:0 1px 2px rgba(0,0,0,.25);}
+  .msg.user .bubble{background:linear-gradient(135deg,#0d9488,#2dd4bf);color:#052e2b;border-bottom-right-radius:5px;}
+  .msg.bot .bubble{background:var(--panel);border:1px solid var(--border);border-bottom-left-radius:5px;color:var(--txt);}
+  .avatar{width:36px;height:36px;border-radius:50%;flex:0 0 36px;display:flex;align-items:center;
+          justify-content:center;font-size:17px;background:var(--panel);border:1px solid var(--border);}
+  .meta{margin-top:7px;}
+  .think{border:1px dashed var(--border);border-radius:11px;background:var(--panel2);
+         margin-top:9px;padding:9px 12px;font-size:12.5px;}
+  .think summary{cursor:pointer;color:var(--sub);user-select:none;}
+  .think summary:hover{color:var(--txt);}
+  .pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:20px;margin:2px 5px 2px 0;font-weight:600;}
+  .pill.low{background:rgba(52,211,153,.16);color:var(--accent2);}
+  .pill.medium{background:rgba(245,158,11,.18);color:var(--warn);}
+  .pill.high{background:rgba(248,113,113,.18);color:var(--danger);}
+  .pill.human{background:rgba(45,212,191,.16);color:var(--accent);}
+  .step{display:flex;gap:6px;padding:3px 0;color:var(--sub);}
+  .step .s-dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:0 0 7px;}
+  .s-ok{background:var(--ok);} .s-warn{background:var(--warn);} .s-error{background:var(--danger);} .s-skip{background:#64748b;}
+  .step .s-d{color:var(--txt);}
+  .src{border-left:3px solid var(--accent);padding:5px 9px;margin:5px 0;background:var(--panel);border-radius:5px;}
+  .src b{color:var(--accent);} .src .cat{color:var(--sub);font-size:11px;}
+  .tool{font-size:12px;color:var(--sub);padding:2px 0;}
+  .tool code{color:var(--accent2);}
+  footer{background:var(--panel);border-top:1px solid var(--border);padding:13px 18px;flex:none;box-shadow:0 -4px 16px rgba(0,0,0,.3);}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px;}
+  .chip{font-size:12.5px;color:var(--accent);background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.28);
+        padding:6px 12px;border-radius:18px;cursor:pointer;transition:background .15s,transform .12s;}
+  .chip:hover{background:rgba(45,212,191,.2);transform:translateY(-1px);}
+  .row{display:flex;gap:10px;}
+  input[type=text]{flex:1;background:var(--panel2);border:1px solid var(--border);color:var(--txt);
+        border-radius:11px;padding:12px 15px;font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s;}
+  input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(45,212,191,.16);}
+  input::placeholder{color:#55637a;}
+  button{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;border:none;border-radius:11px;padding:0 22px;
+         font-size:14px;font-weight:600;cursor:pointer;transition:transform .12s,box-shadow .15s;box-shadow:0 6px 16px rgba(13,148,136,.3);}
+  button:hover{box-shadow:0 10px 22px rgba(13,148,136,.4);transform:translateY(-1px);}
+  button:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none;}
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--sub);padding:0 15px;box-shadow:none;}
+  button.ghost:hover{background:var(--panel2);transform:none;box-shadow:none;}
+  .typing{color:var(--sub);font-size:13px;font-style:italic;}
+  .foot-note{font-size:11px;color:var(--sub);margin-top:9px;text-align:center;}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="brand">
+    <div class="logo">💬</div>
+    <div>
+      <h1>智能客服助手</h1>
+      <p>可查询订单、解答退换货 / 物流 / 发票 / 账户等政策；涉及退款或需要人工处理的复杂诉求，会为您转接人工。</p>
+    </div>
+  </div>
+</header>
+
+<div id="chat">
+  <div class="msg bot">
+    <div class="avatar">🤖</div>
+    <div>
+      <div class="bubble">您好，我是智能客服助手。可以帮您查询订单、解答退换货、物流、发票、账户等政策。试试下面的示例，或直接输入您的问题。</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="chips">
+    <span class="chip" data-q="我的订单 DD202610001 到哪了？">🔍 查订单物流</span>
+    <span class="chip" data-q="7 天无理由退货怎么操作？">📚 退换货政策</span>
+    <span class="chip" data-q="我想退掉 DD202610003 这单">↩️ 申请退款</span>
+    <span class="chip" data-q="东西坏了，你们必须赔我 5000 块！">⚠️ 投诉与赔付</span>
+    <span class="chip" data-q="怎么开电子发票？">🧾 开发票</span>
+  </div>
+  <div class="row">
+    <input type="text" id="inp" placeholder="输入您的问题，例如：我的订单到哪了 / 怎么退款…" />
+    <button id="send">发送</button>
+    <button id="clear" class="ghost">清空</button>
+  </div>
+  <div class="foot-note">演示环境与数据均为仿真示例；接入真实系统只需替换数据来源与工具实现。</div>
+</footer>
+
+<script>
+const chat = document.getElementById('chat');
+const inp = document.getElementById('inp');
+const sendBtn = document.getElementById('send');
+const clearBtn = document.getElementById('clear');
+let messages = [];   // {role, content}
+let meta = [];       // 与 bot 消息对应的思考过程
+
+function scroll(){ chat.scrollTop = chat.scrollHeight; }
+
+function addBubble(role, content, m){
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (role==='user' ? 'user' : 'bot');
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.textContent = role==='user' ? '🙂' : '🤖';
+  const box = document.createElement('div');
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.textContent = content;
+  box.appendChild(b);
+  if(role==='bot' && m){
+    box.appendChild(renderMeta(m));
+  }
+  wrap.appendChild(av); wrap.appendChild(box);
+  chat.appendChild(wrap);
+  scroll();
+  return wrap;
+}
+
+function renderMeta(m){
+  const d = document.createElement('div');
+  d.className = 'meta';
+  let pills = `<span class="pill ${m.risk||'low'}">风险 ${m.risk||'low'}</span>`;
+  if(m.needs_human) pills += `<span class="pill human">已转人工${m.ticket?' · '+m.ticket:''}</span>`;
+  d.innerHTML = pills;
+  const det = document.createElement('details');
+  det.className = 'think';
+  let html = '<summary>🧠 查看处理过程</summary>';
+  (m.steps||[]).forEach(s=>{
+    const cls = s.status==='ok'?'s-ok':s.status==='warn'?'s-warn':s.status==='error'?'s-error':'s-skip';
+    html += `<div class="step"><span class="s-dot ${cls}"></span><span class="s-d"><b>${s.name}</b>：${esc(s.detail||'')}</span></div>`;
+  });
+  if(m.sources && m.sources.length){
+    html += '<div style="margin-top:6px;color:var(--sub)">📚 参考知识：</div>';
+    m.sources.forEach(s=>{
+      html += `<div class="src"><b>${s.id}</b> <span class="cat">[${s.category}]</span> ${esc(s.title)}<br><span style="color:var(--sub)">${esc(s.snippet)}…</span></div>`;
+    });
+  }
+  if(m.tools && m.tools.length){
+    html += '<div style="margin-top:6px;color:var(--sub)">🔧 工具调用：</div>';
+    m.tools.forEach(t=>{
+      const r = t.result && t.result.message ? t.result.message : JSON.stringify(t.result);
+      html += `<div class="tool"><code>${esc(t.name)}</code> → ${esc(r)}</div>`;
+    });
+  }
+  det.innerHTML = html;
+  d.appendChild(det);
+  return d;
+}
+function esc(s){ return String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function setTyping(on){
+  let t = document.getElementById('typing');
+  if(on){
+    if(!t){ t=document.createElement('div'); t.id='typing'; t.className='msg bot';
+      t.innerHTML='<div class="avatar">🤖</div><div class="bubble typing">思考中…</div>'; chat.appendChild(t); scroll(); }
+  } else if(t){ t.remove(); }
+}
+
+async function send(text){
+  text = (text||'').trim();
+  if(!text) return;
+  inp.value='';
+  messages.push({role:'user', content:text});
+  addBubble('user', text);
+  sendBtn.disabled = true; setTyping(true);
+  try{
+    const resp = await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({messages})});
+    const data = await resp.json();
+    setTyping(false);
+    if(data.error){ addBubble('bot', '⚠️ '+data.error); }
+    else{
+      messages.push({role:'assistant', content:data.reply});
+      addBubble('bot', data.reply, data);
+    }
+  }catch(e){
+    setTyping(false);
+    addBubble('bot','⚠️ 服务连接失败，请确认 server.py 已启动（python server.py）。');
+  }
+  sendBtn.disabled = false; inp.focus();
+}
+
+sendBtn.onclick = ()=>send(inp.value);
+inp.addEventListener('keydown', e=>{ if(e.key==='Enter') send(inp.value); });
+clearBtn.onclick = ()=>{ messages=[]; meta=[]; chat.innerHTML=''; };
+document.querySelectorAll('.chip').forEach(c=> c.onclick=()=>send(c.getAttribute('data-q')));
+</script>
+</body>
+</html>

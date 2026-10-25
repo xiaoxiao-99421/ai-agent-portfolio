@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>医疗问答 · 检索增强演示</title>
+<style>
+  :root {
+    --bg:#0d1420; --surface:#141d2b; --surface-2:#1b2637;
+    --ink:#e7edf5; --muted:#93a3b8; --dim:#55637a;
+    --accent:#2dd4bf; --accent-ink:#052e2b;
+    --border:rgba(231,237,245,.1); --border-soft:rgba(231,237,245,.06);
+    --ok:#34d399; --bad:#f87171;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+         background:var(--bg); color:var(--ink); line-height:1.65; min-height:100vh; font-weight:300;
+         -webkit-font-smoothing:antialiased; }
+  body::before{
+    content:''; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.028;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap { max-width:920px; margin:0 auto; padding:0 20px 64px; position:relative; z-index:5; }
+  .hero {
+    margin:0 -20px 26px; padding:34px 20px 28px;
+    background:linear-gradient(135deg,#0f2a33,#0d9488);
+    color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .hero .brand { display:flex; align-items:center; gap:14px; }
+  .hero .logo { width:46px; height:46px; border-radius:13px; background:rgba(255,255,255,.16);
+    display:grid; place-items:center; font-size:24px; }
+  .hero h1 { font-size:23px; margin:0; font-weight:700; letter-spacing:.3px; }
+  .hero p { margin:10px 0 0; font-size:14.5px; opacity:.92; max-width:660px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px;
+          padding:22px 24px; margin-bottom:20px; }
+  label { display:block; font-size:13px; font-weight:600; margin:0 0 7px; color:var(--muted); }
+  textarea, select { width:100%; border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px; font-size:14px; font-family:inherit; background:var(--surface-2); color:var(--ink);
+    transition:border-color .15s, box-shadow .15s; }
+  textarea:focus, select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,212,191,.12); }
+  textarea::placeholder{ color:var(--dim); }
+  textarea { resize:vertical; min-height:92px; }
+  .examples { display:flex; flex-wrap:wrap; gap:9px; }
+  .ex { background:rgba(45,212,191,.1); color:var(--accent); border:1px solid rgba(45,212,191,.25); border-radius:999px;
+        padding:7px 14px; font-size:13px; cursor:pointer; transition:background .15s, transform .12s; }
+  .ex:hover { background:rgba(45,212,191,.2); transform:translateY(-1px); }
+  .row { display:flex; gap:14px; } .row>div { flex:1; }
+  button.go { margin-top:16px; background:var(--accent); color:var(--accent-ink); border:none; border-radius:11px;
+    padding:13px 20px; font-size:15px; font-weight:600; cursor:pointer; width:100%; transition:transform .12s, box-shadow .15s;
+    box-shadow:0 6px 16px rgba(45,212,191,.25); }
+  button.go:hover { box-shadow:0 10px 22px rgba(45,212,191,.32); transform:translateY(-1px); }
+  button.go:disabled { background:#3a4658; box-shadow:none; cursor:not-allowed; transform:none; color:var(--muted); }
+  .err { color:var(--bad); font-size:13px; margin-top:12px; white-space:pre-wrap; }
+  h3 { font-size:14.5px; margin:22px 0 9px; color:var(--ink); }
+  .answer { background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; font-size:14.5px; white-space:pre-wrap; line-height:1.75; color:var(--ink); }
+  .meta { font-size:12px; color:var(--muted); margin-top:9px; }
+  .hit { border:1px solid var(--border); border-radius:11px; padding:13px 15px; margin-bottom:11px;
+    background:var(--surface); transition:border-color .15s; }
+  .hit:hover { border-color:rgba(45,212,191,.3); }
+  .hit-h { display:flex; align-items:center; gap:10px; margin-bottom:5px; }
+  .badge { background:rgba(52,211,153,.16); color:#6ee7b7; border-radius:7px; padding:3px 9px; font-size:12px; font-weight:700; }
+  .dept { background:rgba(45,212,191,.1); color:var(--accent); border-radius:7px; padding:3px 9px; font-size:12px; font-weight:600; }
+  .idx { color:var(--muted); font-size:12px; }
+  .hq { font-weight:600; font-size:14px; margin:3px 0; color:var(--ink); }
+  .ht { font-size:13px; color:var(--muted); white-space:pre-wrap; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="brand">
+    <div class="logo">🩺</div>
+    <div><h1>医疗问答 · 检索增强演示</h1></div>
+  </div>
+  <p>输入健康问题，查看系统如何从知识库中检索相关条目，并据此生成带来源的回答。</p>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <label>示例问题（点击填入）</label>
+    <div class="examples">
+      <button class="ex">孩子发烧怎么办</button>
+      <button class="ex">高血压饮食注意什么</button>
+      <button class="ex">糖尿病能吃水果吗</button>
+      <button class="ex">孕期感冒能吃药吗</button>
+      <button class="ex">降血脂有哪些方法</button>
+      <button class="ex">补钙吃什么好</button>
+    </div>
+    <label for="q" style="margin-top:16px">你的问题</label>
+    <textarea id="q" placeholder="例如：孩子发烧 38.5 度需要吃退烧药吗？"></textarea>
+    <div class="row">
+      <div>
+        <label for="topk" style="margin-top:14px">检索片段数 top_k</label>
+        <select id="topk"><option>3</option><option selected>5</option><option>8</option></select>
+      </div>
+    </div>
+    <button class="go" id="btn">检索 + 生成回答</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div id="result" class="card" style="display:none">
+    <h3>💬 回答（带来源）</h3>
+    <div class="answer" id="answer"></div>
+    <div class="meta" id="meta"></div>
+    <h3>🔎 检索到的片段（按相关度排序）</h3>
+    <div id="hits"></div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const btn = $("btn");
+  document.querySelectorAll(".ex").forEach((b) => (b.onclick = () => ($("q").value = b.textContent)));
+
+  btn.onclick = async () => {
+    const q = $("q").value.trim();
+    if (!q) { $("err").textContent = "请输入问题。"; return; }
+    $("err").textContent = "";
+    btn.disabled = true; btn.textContent = "检索中…（首次加载模型需数秒）";
+    try {
+      const resp = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, top_k: Number($("topk").value) }),
+      });
+      const d = await resp.json();
+      if (!resp.ok) throw new Error(d.error || "服务错误");
+      if (d.error) throw new Error(d.error + (d.hint ? "\n" + d.hint : ""));
+      render(d);
+    } catch (e) {
+      $("err").textContent = "生成失败：" + e.message;
+    } finally {
+      btn.disabled = false; btn.textContent = "检索 + 生成回答";
+    }
+  };
+
+  function render(d) {
+    $("answer").textContent = d.answer;
+    $("meta").textContent =
+      `命中 ${d.hit_count} 条片段 · 基于检索作答：${d.grounded ? "是" : "否"} · trace_id=${d.trace_id || "-"}`;
+    const box = $("hits");
+    box.innerHTML = "";
+    (d.hits || []).forEach((h, i) => {
+      const el = document.createElement("div");
+      el.className = "hit";
+      el.innerHTML =
+        `<div class="hit-h"><span class="badge">${h.score.toFixed(3)}</span>` +
+        `<span class="dept">${h.department || "未知科室"}</span><span class="idx">#${i + 1}</span></div>` +
+        `<div class="hq">${h.question}</div><div class="ht">${h.text}</div>`;
+      box.appendChild(el);
+    });
+    $("result").style.display = "block";
+    $("result").scrollIntoView({ behavior: "smooth" });
+  }
+</script>
+</body>
+</html>

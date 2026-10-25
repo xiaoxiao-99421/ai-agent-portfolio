@@ -1,0 +1,6 @@
+{"query": "拉肚子咋整", "expected_dept": "消化科"}
+{"query": "血压高平时吃啥要注意", "expected_dept": "心血管科"}
+{"query": "我爸有糖尿病，朋友送的蜂蜜能喝不", "expected_dept": "内分泌科"}
+{"query": "腰特别疼，是不是腰突了", "expected_dept": "骨科"}
+{"query": "最近老是头痛，睡不好，要不要去查查", "expected_dept": "神经内科"}
+{"query": "皮肤过敏特别痒，越抓越厉害怎么办", "expected_dept": "皮肤科"}

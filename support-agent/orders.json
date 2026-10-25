@@ -1,0 +1,93 @@
+{
+  "note": "演示用 mock 订单池，仅供 query_order 工具查询，不涉及真实用户隐私。",
+  "orders": [
+    {
+      "order_id": "DD202610001",
+      "user_hint": "张**",
+      "item": "无线降噪耳机 Pro",
+      "amount": 899.00,
+      "status": "已发货",
+      "carrier": "顺丰速运",
+      "tracking_no": "SF1234567890",
+      "placed_at": "2026-10-15",
+      "estimated_arrival": "2026-10-18"
+    },
+    {
+      "order_id": "DD202610002",
+      "user_hint": "李**",
+      "item": "智能手表 S2",
+      "amount": 1299.00,
+      "status": "待付款",
+      "carrier": "",
+      "tracking_no": "",
+      "placed_at": "2026-10-18",
+      "estimated_arrival": ""
+    },
+    {
+      "order_id": "DD202610003",
+      "user_hint": "王**",
+      "item": "机械键盘 87 键",
+      "amount": 459.00,
+      "status": "已完成",
+      "carrier": "中通快递",
+      "tracking_no": "ZT9876543210",
+      "placed_at": "2026-10-08",
+      "estimated_arrival": "2026-10-11"
+    },
+    {
+      "order_id": "DD202610004",
+      "user_hint": "陈**",
+      "item": "4K 显示器 27 寸",
+      "amount": 1599.00,
+      "status": "退款中",
+      "carrier": "京东物流",
+      "tracking_no": "JD5555666677",
+      "placed_at": "2026-10-10",
+      "estimated_arrival": "2026-10-13"
+    },
+    {
+      "order_id": "DD202610005",
+      "user_hint": "刘**",
+      "item": "便携蓝牙音箱",
+      "amount": 399.00,
+      "status": "已签收",
+      "carrier": "韵达快递",
+      "tracking_no": "YD1122334455",
+      "placed_at": "2026-10-12",
+      "estimated_arrival": "2026-10-15"
+    },
+    {
+      "order_id": "DD202610006",
+      "user_hint": "赵**",
+      "item": "扫地机器人 X1",
+      "amount": 1899.00,
+      "status": "已发货",
+      "carrier": "京东物流",
+      "tracking_no": "JD6688990011",
+      "placed_at": "2026-10-17",
+      "estimated_arrival": "2026-10-20"
+    },
+    {
+      "order_id": "DD202610007",
+      "user_hint": "孙**",
+      "item": "空气炸锅 5L",
+      "amount": 299.00,
+      "status": "待发货",
+      "carrier": "",
+      "tracking_no": "",
+      "placed_at": "2026-10-19",
+      "estimated_arrival": ""
+    },
+    {
+      "order_id": "DD202610008",
+      "user_hint": "周**",
+      "item": "声波电动牙刷",
+      "amount": 259.00,
+      "status": "已完成",
+      "carrier": "圆通速递",
+      "tracking_no": "YT3344556677",
+      "placed_at": "2026-10-05",
+      "estimated_arrival": "2026-10-08"
+    }
+  ]
+}
